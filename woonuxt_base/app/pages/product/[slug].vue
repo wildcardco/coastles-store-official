@@ -147,8 +147,7 @@ const disabledAddToCart = computed(() => {
 
         <!-- Quantity Selector -->
         <div v-if="isVariableProduct || isSimpleProduct" class="mt-8">
-          <label for="quantity" class="text-sm font-medium text-gray-900">{{ $t('messages.shop.quantity') }}</label>
-          <div class="mt-2 flex rounded-md shadow-sm">
+          <div class="flex rounded-md shadow-sm">
             <button 
               @click="quantity > 1 && quantity--"
               class="relative -mr-px inline-flex items-center px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
@@ -160,17 +159,22 @@ const disabledAddToCart = computed(() => {
               v-model="quantity"
               type="number"
               min="1"
+              :max="type.stockQuantity || 999999"
               class="block w-20 border-gray-300 text-center focus:ring-primary focus:border-primary sm:text-sm"
               :disabled="disabledAddToCart"
+              @change="quantity = Math.min(Math.max(1, quantity), type.stockQuantity || 999999)"
             />
             <button 
-              @click="quantity++"
+              @click="quantity < (type.stockQuantity || 999999) && quantity++"
               class="relative -ml-px inline-flex items-center px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
-              :disabled="disabledAddToCart"
+              :disabled="disabledAddToCart || quantity >= (type.stockQuantity || 999999)"
             >
               +
             </button>
           </div>
+          <p v-if="type.stockQuantity" class="mt-2 text-sm text-gray-600">
+            {{ type.stockQuantity }} {{ $t('messages.shop.inStock') }}
+          </p>
         </div>
 
         <!-- Add to Cart Button -->
