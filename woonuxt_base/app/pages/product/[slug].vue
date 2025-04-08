@@ -114,7 +114,7 @@ const disabledAddToCart = computed(() => {
         <LazyWPAdminLink :link="`/wp-admin/post.php?post=${product.databaseId}&action=edit`">Edit</LazyWPAdminLink>
         
         <!-- Rating -->
-        <StarRating :rating="product.averageRating || 0" :count="product.reviewCount || 0" v-if="storeSettings.showReviews" class="mt-2" />
+        <!-- <StarRating :rating="product.averageRating || 0" :count="product.reviewCount || 0" v-if="storeSettings.showReviews" class="mt-2" /> -->
         
         <!-- Price -->
         <div class="mt-4">
