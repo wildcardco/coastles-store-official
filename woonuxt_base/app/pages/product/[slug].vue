@@ -86,118 +86,169 @@ const disabledAddToCart = computed(() => {
 </script>
 
 <template>
-  <main class="container relative py-6 xl:max-w-7xl">
-    <div v-if="product">
-      <SEOHead :info="product" />
-      <Breadcrumb :product class="mb-6" v-if="storeSettings.showBreadcrumbOnSingleProduct" />
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <SEOHead 
+      :info="product"
+      :title="`${type.name} - Coastles`"
+      :description="product.shortDescription || 'Premium streetwear by Coastles. High-quality materials, unique designs, and California-inspired style.'"
+      :image="product.image?.sourceUrl"
+      type="product"
+      :keywords="`${type.name}, Coastles clothing, premium streetwear, California style, ${product.productCategories?.nodes?.map(cat => cat.name).join(', ')}`"
+    />
+    <Breadcrumb :product="product" class="mb-6" v-if="storeSettings.showBreadcrumbOnSingleProduct" />
 
-      <div class="flex flex-col gap-10 md:flex-row md:justify-between lg:gap-24">
-        <ProductImageGallery
+    <div class="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-2">
+      <!-- Product Images -->
+      <div class="lg:col-start-1 lg:col-span-1">
+        <ProductImageSlider
           v-if="product.image"
-          class="relative flex-1"
           :main-image="product.image"
-          :gallery="product.galleryImages!"
-          :node="type"
-          :activeVariation="activeVariation || {}" />
-        <NuxtImg v-else class="relative flex-1 skeleton" src="/images/placeholder.jpg" :alt="product?.name || 'Product'" />
+          :gallery="product.galleryImages"
+          :node="type" />
+        <NuxtImg v-else class="relative w-full skeleton rounded-lg" src="/images/placeholder.jpg" :alt="product?.name || 'Product'" />
+      </div>
 
-        <div class="lg:max-w-md xl:max-w-lg md:py-2 w-full">
-          <div class="flex justify-between mb-4">
-            <div class="flex-1">
-              <h1 class="flex flex-wrap items-center gap-2 mb-2 text-2xl font-sesmibold">
-                {{ type.name }}
-                <LazyWPAdminLink :link="`/wp-admin/post.php?post=${product.databaseId}&action=edit`">Edit</LazyWPAdminLink>
-              </h1>
-              <StarRating :rating="product.averageRating || 0" :count="product.reviewCount || 0" v-if="storeSettings.showReviews" />
-            </div>
-            <ProductPrice class="text-xl" :sale-price="type.salePrice" :regular-price="type.regularPrice" />
-          </div>
+      <!-- Product Info -->
+      <div class="lg:col-start-2 lg:col-span-1">
+        <h1 class="text-4xl font-heading italic font-medium text-gray-900">{{ type.name }}</h1>
+        <LazyWPAdminLink :link="`/wp-admin/post.php?post=${product.databaseId}&action=edit`">Edit</LazyWPAdminLink>
+        
+        <!-- Rating -->
+        <StarRating :rating="product.averageRating || 0" :count="product.reviewCount || 0" v-if="storeSettings.showReviews" class="mt-2" />
+        
+        <!-- Price -->
+        <div class="mt-4">
+          <ProductPrice class="text-2xl font-bold text-red-600" :sale-price="type.salePrice" :regular-price="type.regularPrice" />
+        </div>
 
-          <div class="grid gap-2 my-8 text-sm empty:hidden">
-            <div v-if="!isExternalProduct" class="flex items-center gap-2">
-              <span class="text-gray-400">{{ $t('messages.shop.availability') }}: </span>
-              <StockStatus :stockStatus @updated="mergeLiveStockStatus" />
-            </div>
-            <div class="flex items-center gap-2" v-if="storeSettings.showSKU && product.sku">
-              <span class="text-gray-400">{{ $t('messages.shop.sku') }}: </span>
-              <span>{{ product.sku || 'N/A' }}</span>
-            </div>
-          </div>
+        <!-- Stock Status -->
+        <div class="mt-2" v-if="!isExternalProduct">
+          <StockStatus :stockStatus="stockStatus" @updated="mergeLiveStockStatus" class="text-sm" />
+        </div>
 
-          <div class="mb-8 font-light prose" v-html="product.shortDescription || product.description" />
+        <!-- SKU -->
+        <div class="mt-2 text-sm text-gray-600" v-if="storeSettings.showSKU && product.sku">
+          <span>{{ $t('messages.shop.sku') }}: {{ product.sku || 'N/A' }}</span>
+        </div>
 
-          <hr />
+        <!-- Description -->
+        <div class="mt-6 prose prose-sm text-gray-700" v-html="product.shortDescription || product.description" />
 
-          <form @submit.prevent="addToCart(selectProductInput)">
-            <AttributeSelections
-              v-if="isVariableProduct && product.attributes && product.variations"
-              class="mt-4 mb-8"
-              :attributes="product.attributes.nodes"
-              :defaultAttributes="product.defaultAttributes"
-              :variations="product.variations.nodes"
-              @attrs-changed="updateSelectedVariations" />
-            <div
-              v-if="isVariableProduct || isSimpleProduct"
-              class="fixed bottom-0 left-0 z-10 flex items-center w-full gap-4 p-4 mt-12 bg-white md:static md:bg-transparent bg-opacity-90 md:p-0">
-              <input
-                v-model="quantity"
-                type="number"
-                min="1"
-                aria-label="Quantity"
-                class="bg-white border rounded-lg flex text-left p-2.5 w-20 gap-4 items-center justify-center focus:outline-none" />
-              <AddToCartButton class="flex-1 w-full md:max-w-xs" :disabled="disabledAddToCart" :class="{ loading: isUpdatingCart }" />
-            </div>
-            <a
-              v-if="isExternalProduct && product.externalUrl"
-              :href="product.externalUrl"
-              target="_blank"
-              class="rounded-lg flex font-bold bg-gray-800 text-white text-center min-w-[150px] p-2.5 gap-4 items-center justify-center focus:outline-none">
-              {{ product?.buttonText || 'View product' }}
-            </a>
-          </form>
+        <hr class="my-8" />
 
-          <div v-if="storeSettings.showProductCategoriesOnSingleProduct && product.productCategories">
-            <div class="grid gap-2 my-8 text-sm">
-              <div class="flex items-center gap-2">
-                <span class="text-gray-400">{{ $t('messages.shop.category', 2) }}:</span>
-                <div class="product-categories">
-                  <NuxtLink
-                    v-for="category in product.productCategories.nodes"
-                    :key="category.databaseId"
-                    :to="`/product-category/${decodeURIComponent(category?.slug || '')}`"
-                    class="hover:text-primary"
-                    :title="category.name"
-                    >{{ category.name }}<span class="comma">, </span>
-                  </NuxtLink>
-                </div>
-              </div>
-            </div>
-            <hr />
-          </div>
+        <!-- Variant Selection -->
+        <AttributeSelections
+          v-if="isVariableProduct && product.attributes && product.variations"
+          class="mt-8"
+          :attributes="product.attributes.nodes"
+          :defaultAttributes="product.defaultAttributes"
+          :variations="product.variations.nodes"
+          @attrs-changed="updateSelectedVariations" />
 
-          <div class="flex flex-wrap gap-4">
-            <WishlistButton :product />
-            <ShareButton :product />
+        <!-- Quantity Selector -->
+        <div v-if="isVariableProduct || isSimpleProduct" class="mt-8">
+          <label for="quantity" class="text-sm font-medium text-gray-900">{{ $t('messages.shop.quantity') }}</label>
+          <div class="mt-2 flex rounded-md shadow-sm">
+            <button 
+              @click="quantity > 1 && quantity--"
+              class="relative -mr-px inline-flex items-center px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+              :disabled="disabledAddToCart"
+            >
+              −
+            </button>
+            <input
+              v-model="quantity"
+              type="number"
+              min="1"
+              class="block w-20 border-gray-300 text-center focus:ring-primary focus:border-primary sm:text-sm"
+              :disabled="disabledAddToCart"
+            />
+            <button 
+              @click="quantity++"
+              class="relative -ml-px inline-flex items-center px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+              :disabled="disabledAddToCart"
+            >
+              +
+            </button>
           </div>
         </div>
-      </div>
-      <div v-if="product.description || product.reviews" class="my-32">
-        <ProductTabs :product />
-      </div>
-      <div class="my-32" v-if="product.related && storeSettings.showRelatedProducts">
-        <div class="mb-4 text-xl font-semibold">{{ $t('messages.shop.youMayLike') }}</div>
-        <LazyProductRow :products="product.related.nodes" class="grid-cols-2 md:grid-cols-4 lg:grid-cols-5" />
+
+        <!-- Add to Cart Button -->
+        <div class="mt-8">
+          <form @submit.prevent="addToCart(selectProductInput)">
+            <AddToCartButton 
+              class="w-full rounded-lg font-bold bg-gray-800 text-white text-center p-2.5 hover:bg-gray-700" 
+              :disabled="disabledAddToCart" 
+              :class="{ loading: isUpdatingCart }" 
+            />
+          </form>
+        </div>
+
+        <!-- External Product Link -->
+        <a
+          v-if="isExternalProduct && product.externalUrl"
+          :href="product.externalUrl"
+          target="_blank"
+          class="mt-8 block rounded-lg font-bold bg-gray-800 text-white text-center p-2.5 hover:bg-gray-700">
+          {{ product?.buttonText || 'View product' }}
+        </a>
+
+        <!-- Categories -->
+        <div v-if="storeSettings.showProductCategoriesOnSingleProduct && product.productCategories" class="mt-8">
+          <hr class="mb-4" />
+          <div class="text-sm text-gray-600">
+            <span>{{ $t('messages.shop.category', 2) }}: </span>
+            <div class="product-categories inline">
+              <NuxtLink
+                v-for="category in product.productCategories.nodes"
+                :key="category.databaseId"
+                :to="`/product-category/${decodeURIComponent(category?.slug || '')}`"
+                class="hover:text-primary"
+                :title="category.name"
+                >{{ category.name }}<span class="comma">, </span>
+              </NuxtLink>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap gap-4 mt-8">
+          <WishlistButton :product="product" />
+          <ShareButton :product="product" />
+        </div>
       </div>
     </div>
-  </main>
+
+    <!-- Product Tabs -->
+    <!-- <div v-if="product.description || product.reviews" class="mt-32">
+      <ProductTabs :product="product" />
+    </div> -->
+
+    <!-- Related Products -->
+    <!-- <div class="mt-32" v-if="product.related && storeSettings.showRelatedProducts">
+      <div class="mb-4 text-xl font-semibold">{{ $t('messages.shop.youMayLike') }}</div>
+      <LazyProductRow :products="product.related.nodes" class="grid-cols-2 md:grid-cols-4 lg:grid-cols-5" />
+    </div> -->
+  </div>
 </template>
 
-<style scoped>
+<style lang="postcss" scoped>
 .product-categories > a:last-child .comma {
   display: none;
 }
 
-input[type='number']::-webkit-inner-spin-button {
-  opacity: 1;
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.loading {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 </style>

@@ -10,7 +10,9 @@ export default defineNuxtConfig({
   app: {
     head: {
       htmlAttrs: { lang: 'en' },
-      link: [{ rel: 'icon', href: '/logo.svg', type: 'image/svg+xml' }],
+      link: [
+        { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
+      ],
     },
     pageTransition: { name: 'page', mode: 'default' },
   },
@@ -29,7 +31,20 @@ export default defineNuxtConfig({
 
   components: [{ path: resolve('./app/components'), pathPrefix: false }],
 
-  modules: ['woonuxt-settings', 'nuxt-graphql-client', '@nuxtjs/tailwindcss', '@nuxt/icon', '@nuxt/image', '@nuxtjs/i18n'],
+  modules: [
+    '@nuxt/devtools',
+    'woonuxt-settings',
+    'nuxt-graphql-client',
+    '@nuxtjs/tailwindcss',
+    '@nuxt/icon',
+    '@nuxt/image',
+    '@nuxtjs/i18n',
+  ],
+
+  routeRules: {
+    '/product-category/**': { redirect: '/' },
+    '/contact': { redirect: '/' }
+  },
 
   'graphql-client': {
     clients: {
@@ -82,4 +97,8 @@ export default defineNuxtConfig({
     strategy: 'no_prefix',
     restructureDir: false,
   },
+
+  devtools: {
+    enabled: true
+  }
 });
