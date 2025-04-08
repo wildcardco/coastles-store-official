@@ -24,7 +24,12 @@ useHead({
 </script>
 
 <template>
-  <NuxtLoadingIndicator />
+  <NuxtLoadingIndicator 
+    :height="3"
+    :duration="3000"
+    :throttle="400"
+    color="linear-gradient(to right, #444444, #222222, #111111)"
+  />
   <div class="flex flex-col min-h-screen">
     <AppHeader />
 
@@ -42,15 +47,21 @@ useHead({
       <div v-if="isShowingCart || isShowingMobileMenu" class="bg-black opacity-25 inset-0 z-40 fixed" @click="closeCartAndMenu" />
     </Transition>
 
-    <LazyAppFooter hydrate-on-visible />
+
   </div>
 </template>
 
 <style lang="postcss">
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap');
+
 html,
 body {
-  @apply bg-gray-100 text-gray-900;
+  @apply bg-gray-100 text-gray-900 font-sans;
   scroll-behavior: smooth;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  @apply font-heading;
 }
 
 img {
@@ -166,24 +177,41 @@ select {
 
 .page-enter-active,
 .page-leave-active {
-  transition: opacity 20ms;
+  transition: all 0.4s ease-out;
 }
 
-.page-enter,
+.page-enter-from {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
 .page-leave-to {
   opacity: 0;
+  transform: translateX(-20px);
 }
 
-.page-enter-active {
-  animation-duration: 200ms;
-  animation-name: fadeIn;
-  animation-timing-function: linear;
-  backface-visibility: hidden;
+.page-enter-active::before,
+.page-leave-active::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transform: translateX(-100%);
+  animation: flash 0.5s ease-out;
+  pointer-events: none;
+  z-index: 9999;
 }
 
-.page-leave-active {
-  animation-name: fadeOut;
-  animation-duration: 200ms;
+@keyframes flash {
+  0% {
+    transform: translateX(-100%) skewX(-45deg);
+  }
+  100% {
+    transform: translateX(100%) skewX(-45deg);
+  }
 }
 
 @keyframes skelaton {
