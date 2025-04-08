@@ -16,15 +16,15 @@ export default defineNuxtConfig({
       meta: [
         { property: 'og:site_name', content: 'Coastles Store' },
         { property: 'og:title', content: 'Coastles Store - Premium Streetwear' },
-        { property: 'og:description', content: 'Premium streetwear designed for those who dare to stand out. Discover our collection of high-quality California-inspired clothing.' },
+        { property: 'og:description', content: 'Premium streetwear designed for those who dare to stand out. Discover our collection of high-quality anime-inspired clothing.' },
         { property: 'og:image', content: '/logo/logo.png' },
         { property: 'og:url', content: 'https://coastles.store' },
         { property: 'og:type', content: 'website' },
         { name: 'twitter:card', content: 'summary_large_image' },
         { name: 'twitter:title', content: 'Coastles Store - Premium Streetwear' },
-        { name: 'twitter:description', content: 'Premium streetwear designed for those who dare to stand out. Discover our collection of high-quality California-inspired clothing.' },
+        { name: 'twitter:description', content: 'Premium streetwear designed for those who dare to stand out. Discover our collection of high-quality anime-inspired clothing.' },
         { name: 'twitter:image', content: '/logo/logo.png' },
-        { name: 'description', content: 'Premium streetwear designed for those who dare to stand out. Discover our collection of high-quality California-inspired clothing.' }
+        { name: 'description', content: 'Premium streetwear designed for those who dare to stand out. Discover our collection of high-quality anime-inspired clothing.' }
       ],
     },
     pageTransition: { name: 'page', mode: 'default' },
