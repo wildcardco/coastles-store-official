@@ -29,7 +29,9 @@ useSeoMeta({
         <h2 class="text-lg font-semibold md:text-2xl">{{ $t('messages.shop.popularProducts') }}</h2>
         <NuxtLink class="text-primary" to="/products">{{ $t('messages.general.viewAll') }}</NuxtLink>
       </div>
-      <ProductRow :products="popularProducts" class="grid-cols-2 md:grid-cols-4 lg:grid-cols-5 mt-8" />
+      <div class="mt-8">
+        <ProductRow :products="popularProducts" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6" />
+      </div>
     </section>
   </main>
 </template>
