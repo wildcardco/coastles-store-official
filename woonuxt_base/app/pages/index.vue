@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import { ProductsOrderByEnum } from '#woo';
-const { siteName, description, shortDescription, siteImage } = useAppConfig();
+const { siteName, description, shortDescription } = useAppConfig();
+const runtimeConfig = useRuntimeConfig();
+const img = useImage();
 
 const { data } = await useAsyncGql('getProductCategories', { first: 6 });
 const productCategories = data.value?.productCategories?.nodes || [];
@@ -8,13 +10,16 @@ const productCategories = data.value?.productCategories?.nodes || [];
 const { data: productData } = await useAsyncGql('getProducts', { first: 5, orderby: ProductsOrderByEnum.POPULARITY });
 const popularProducts = productData.value.products?.nodes || [];
 
+const logoUrl = runtimeConfig?.public?.LOGO ? img(runtimeConfig?.public?.LOGO) : '/logo/logo.png';
+
 useSeoMeta({
   title: `Home`,
   ogTitle: siteName,
   description: description,
   ogDescription: shortDescription,
-  ogImage: siteImage,
+  ogImage: logoUrl,
   twitterCard: `summary_large_image`,
+  twitterImage: logoUrl,
 });
 </script>
 
