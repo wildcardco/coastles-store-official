@@ -76,6 +76,14 @@ const stockStatus = computed(() => {
   return type.value?.stockStatus || StockStatusEnum.OUT_OF_STOCK;
 });
 
+const stockLevel = computed(() => {
+  const quantity = type.value?.stockQuantity;
+  if (!quantity) return '';
+  if (quantity < 20) return 'Low stock';
+  if (quantity <= 30) return 'Medium stock';
+  return 'Several in stock';
+});
+
 const disabledAddToCart = computed(() => {
   const isOutOfStock = stockStatus.value === StockStatusEnum.OUT_OF_STOCK;
   const isInvalidType = !type.value;
@@ -172,8 +180,12 @@ const disabledAddToCart = computed(() => {
               +
             </button>
           </div>
-          <p v-if="type.stockQuantity" class="mt-2 text-sm text-gray-600">
-            {{ type.stockQuantity }} {{ $t('messages.shop.inStock') }}
+          <p v-if="type.stockQuantity" class="mt-2 text-sm" :class="{
+            'text-red-600': type.stockQuantity < 20,
+            'text-yellow-600': type.stockQuantity >= 20 && type.stockQuantity <= 30,
+            'text-green-600': type.stockQuantity > 30
+          }">
+            {{ stockLevel }}
           </p>
         </div>
 
