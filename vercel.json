@@ -1,0 +1,8 @@
+{
+  "env": {
+    "GQL_HOST": "https://admin.coastles.store/graphql",
+    "APP_HOST": "https://coastles.store",
+    "NUXT_IMAGE_DOMAINS": "admin.coastles.store"
+  },
+  "buildCommand": "nuxt generate"
+} 
