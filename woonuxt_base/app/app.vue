@@ -18,6 +18,7 @@ watch(
   () => closeCartAndMenu(),
 );
 
+
 useHead({
   titleTemplate: `%s - ${siteName}`,
 });
