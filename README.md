@@ -1,7 +1,7 @@
 # Coastles Store
 
 <div align="center">
-  <img src="logo.png" alt="Coastles Store Logo" width="400">
+  <img src="https://coastles.store/logo/logo.png" alt="Coastles Store Logo" width="400">
 </div>
 
 ## About Coastles Store
