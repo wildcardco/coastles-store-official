@@ -1,6 +1,8 @@
 # Coastles Store
 
-![Coastles Store Logo](/logo/logo.png)
+<div align="center">
+  <img src="logo.png" alt="Coastles Store Logo" width="400">
+</div>
 
 ## About Coastles Store
 
@@ -31,4 +33,4 @@ For any inquiries, please reach out to us through our website.
 
 ---
 
-© 2024 Coastles Store. All rights reserved.
+© 2025 Coastles Store. All rights reserved.
