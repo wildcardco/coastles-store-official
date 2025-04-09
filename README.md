@@ -34,3 +34,4 @@ For any inquiries, please reach out to us through our website.
 ---
 
 © 2025 Coastles Store. All rights reserved.
+
