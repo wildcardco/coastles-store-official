@@ -105,12 +105,13 @@ const timeUnits = computed(() => {
 })
 
 onMounted(() => {
-  fetchCentralTimeAndSetWindows()
-  const timer = setInterval(() => {
-    fetchCentralTimeAndSetWindows()
-  }, 1000) // update every second for smooth countdown
-  onUnmounted(() => {
-    clearInterval(timer)
+  fetchCentralTimeAndSetWindows().then(() => {
+    const timer = setInterval(() => {
+      now.value = new Date(now.value.getTime() + 1000)
+    }, 1000)
+    onUnmounted(() => {
+      clearInterval(timer)
+    })
   })
 })
 
