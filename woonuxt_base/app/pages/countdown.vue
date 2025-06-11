@@ -26,35 +26,33 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRuntimeConfig, useHead } from '#app'
+import { useRouter } from 'vue-router'
 
 const config = useRuntimeConfig()
 const now = ref(new Date())
 const openTime = ref<Date | null>(null)
 const closeTime = ref<Date | null>(null)
+const router = useRouter()
 
-// Hardcode the month/day for the event window (June 13th 9pm, June 15th 9pm)
-const OPEN_MONTH = 5 // June (0-based)
-const OPEN_DAY = 13
-const CLOSE_MONTH = 5 // June (0-based)
-const CLOSE_DAY = 15
-const EVENT_HOUR = 21 // 9pm
-const EVENT_MINUTE = 0
+// Remove hardcoded event window
+// const OPEN_MONTH = 5 // June (0-based)
+// const OPEN_DAY = 13
+// const CLOSE_MONTH = 5 // June (0-based)
+// const CLOSE_DAY = 15
+// const EVENT_HOUR = 21 // 9pm
+// const EVENT_MINUTE = 0
 
 async function fetchCentralTimeAndSetWindows() {
   try {
     const res = await fetch('https://worldtimeapi.org/api/timezone/America/Chicago')
     const data = await res.json()
     now.value = new Date(data.datetime)
-    const year = now.value.getFullYear()
-    openTime.value = new Date(year, OPEN_MONTH, OPEN_DAY, EVENT_HOUR, EVENT_MINUTE, 0)
-    closeTime.value = new Date(year, CLOSE_MONTH, CLOSE_DAY, EVENT_HOUR, EVENT_MINUTE, 0)
   } catch (e) {
-    // fallback to local time
     now.value = new Date()
-    const year = now.value.getFullYear()
-    openTime.value = new Date(year, OPEN_MONTH, OPEN_DAY, EVENT_HOUR, EVENT_MINUTE, 0)
-    closeTime.value = new Date(year, CLOSE_MONTH, CLOSE_DAY, EVENT_HOUR, EVENT_MINUTE, 0)
   }
+  // Use config values for open/close
+  openTime.value = new Date(config.public.siteOpenTime)
+  closeTime.value = new Date(config.public.siteCloseTime)
 }
 
 const isBeforeOpen = computed(() => openTime.value && now.value < openTime.value)
@@ -108,6 +106,22 @@ onMounted(() => {
   fetchCentralTimeAndSetWindows().then(() => {
     const timer = setInterval(() => {
       now.value = new Date(now.value.getTime() + 1000)
+      // Redirect logic
+      if (isOpen.value && targetTime.value && now.value >= targetTime.value) {
+        // Store just closed, redirect to /countdown
+        router.replace('/countdown')
+      } else if (
+        isOpen.value &&
+        openTime.value &&
+        closeTime.value &&
+        now.value >= openTime.value &&
+        now.value < closeTime.value
+      ) {
+        // Store just opened, wait 5 seconds then redirect to homepage
+        setTimeout(() => {
+          router.replace('/')
+        }, 5000)
+      }
     }, 1000)
     onUnmounted(() => {
       clearInterval(timer)

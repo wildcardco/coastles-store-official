@@ -41,8 +41,8 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      siteOpenTime: process.env.SITE_OPEN_TIME || '2024-06-13T21:00:00-05:00', // June 13th, 9PM Central
-      siteCloseTime: process.env.SITE_CLOSE_TIME || '2024-06-15T21:00:00-05:00', // June 15th, 9PM Central
+      siteOpenTime: process.env.SITE_OPEN_TIME || '2025-06-13T21:00:00-05:00',
+      siteCloseTime: process.env.SITE_CLOSE_TIME || '2025-06-15T21:00:00-05:00',
     }
   },
 });
