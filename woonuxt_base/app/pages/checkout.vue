@@ -121,32 +121,32 @@ useSeoMeta({
 
           <div>
             <h2 class="w-full mb-3 text-2xl font-semibold">{{ $t('messages.billing.billingDetails') }}</h2>
-            <BillingDetails v-model="customer.billing" />
+            <BillingDetails v-if="customer.billing" v-model="customer.billing" />
           </div>
 
-          <label v-if="cart.availableShippingMethods.length > 0" for="shipToDifferentAddress" class="flex items-center gap-2">
+          <div v-if="cart?.availableShippingMethods && cart.availableShippingMethods.length > 0" for="shipToDifferentAddress" class="flex items-center gap-2">
             <span>{{ $t('messages.billing.differentAddress') }}</span>
             <input id="shipToDifferentAddress" v-model="orderInput.shipToDifferentAddress" type="checkbox" name="shipToDifferentAddress" />
-          </label>
+          </div>
 
           <Transition name="scale-y" mode="out-in">
-            <div v-if="orderInput.shipToDifferentAddress">
+            <div v-if="orderInput.shipToDifferentAddress && customer.shipping">
               <h2 class="mb-4 text-xl font-semibold">{{ $t('messages.general.shippingDetails') }}</h2>
               <ShippingDetails v-model="customer.shipping" />
             </div>
           </Transition>
 
           <!-- Shipping methods -->
-          <div v-if="cart.availableShippingMethods.length">
+          <div v-if="cart?.availableShippingMethods && cart.availableShippingMethods.length">
             <h3 class="mb-4 text-xl font-semibold">{{ $t('messages.general.shippingSelect') }}</h3>
-            <ShippingOptions :options="cart.availableShippingMethods[0].rates" :active-option="cart.chosenShippingMethods[0]" />
+            <ShippingOptions :options="cart?.availableShippingMethods?.[0]?.rates ?? []" :active-option="cart?.chosenShippingMethods?.[0] ?? ''" />
           </div>
 
           <!-- Pay methods -->
           <div v-if="paymentGateways?.nodes.length" class="mt-2 col-span-full">
             <h2 class="mb-4 text-xl font-semibold">{{ $t('messages.billing.paymentOptions') }}</h2>
             <PaymentOptions v-model="orderInput.paymentMethod" class="mb-4" :paymentGateways />
-            <StripeElement v-if="stripe" v-show="orderInput.paymentMethod.id == 'stripe'" :stripe @updateElement="handleStripeElement" />
+            <StripeElement v-if="stripe" v-show="orderInput.paymentMethod.id == 'stripe' || orderInput.paymentMethod.id == 'stripe_cc'" :stripe @updateElement="handleStripeElement" />
           </div>
 
           <!-- Order note -->
