@@ -18,6 +18,10 @@ const { cart, isUpdatingCart } = useCart();
         <span class="text-gray-700 tabular-nums" v-html="cart.subtotal" />
       </div>
       <div class="flex justify-between">
+        <span>{{ $t('messages.general.tax') }}</span>
+        <span class="text-gray-700 tabular-nums">{{ cart.totalTax }}</span>
+      </div>
+      <div class="flex justify-between">
         <span>{{ $t('messages.general.shipping') }}</span>
         <span class="text-gray-700 tabular-nums">
           {{ parseFloat(cart.shippingTotal) > 0 ? '+' : '' }} {{ cart.shippingTotal }}
