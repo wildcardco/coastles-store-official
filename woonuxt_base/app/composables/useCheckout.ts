@@ -21,7 +21,9 @@ export function useCheckout() {
 
     try {
       if (!viewer?.value?.id) {
-        throw new Error('Viewer ID is missing.');
+        // Allow guest checkout: skip updating customer if no viewer
+        isUpdatingCart.value = false;
+        return;
       }
 
       const { updateCustomer } = await GqlUpdateCustomer({
