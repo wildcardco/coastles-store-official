@@ -43,6 +43,8 @@ export default defineNuxtConfig({
     public: {
       siteOpenTime: process.env.SITE_OPEN_TIME || '2025-06-13T21:00:00-05:00',
       siteCloseTime: process.env.SITE_CLOSE_TIME || '2025-06-15T21:00:00-05:00',
-    }
+      STRIPE_PUBLISHABLE_KEY: process.env.NUXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+    },
+    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
   },
 });

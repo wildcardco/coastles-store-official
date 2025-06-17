@@ -18,6 +18,18 @@ const stripe: Stripe | null = stripeKey ? await loadStripe(stripeKey) : null;
 const elements = ref();
 const isPaid = ref<boolean>(false);
 
+const allPaymentGateways = computed(() => {
+  const gateways = paymentGateways?.nodes ? [...paymentGateways.nodes] : [];
+  if (!gateways.some(g => g.id === 'stripe')) {
+    gateways.push({
+      id: 'stripe',
+      title: 'Credit/Debit Card',
+      description: 'Pay securely with your credit or debit card via Stripe.',
+    });
+  }
+  return { nodes: gateways };
+});
+
 onBeforeMount(async () => {
   if (query.cancel_order) window.close();
 });
@@ -25,20 +37,27 @@ onBeforeMount(async () => {
 const payNow = async () => {
   buttonText.value = t('messages.general.processing');
 
-  const { stripePaymentIntent } = await GqlGetStripePaymentIntent();
-  const clientSecret = stripePaymentIntent?.clientSecret || '';
-
   try {
     if (orderInput.value.paymentMethod.id === 'stripe' && stripe && elements.value) {
-      const cardElement = elements.value.getElement('card') as StripeCardElement;
-      const { setupIntent } = await stripe.confirmCardSetup(clientSecret, { payment_method: { card: cardElement } });
-      const { source } = await stripe.createSource(cardElement as CreateSourceData);
+      const { error, paymentIntent } = await stripe.confirmPayment({
+        elements: elements.value,
+        confirmParams: {
+          return_url: `${window.location.origin}/checkout/order-received`,
+        },
+        redirect: 'if_required',
+      });
 
-      if (source) orderInput.value.metaData.push({ key: '_stripe_source_id', value: source.id });
-      if (setupIntent) orderInput.value.metaData.push({ key: '_stripe_intent_id', value: setupIntent.id });
+      if (error) {
+        console.error(error);
+        buttonText.value = t('messages.shop.placeOrder');
+        return;
+      }
 
-      isPaid.value = setupIntent?.status === 'succeeded' || false;
-      orderInput.value.transactionId = source?.created?.toString() || new Date().getTime().toString();
+      if (paymentIntent) {
+        orderInput.value.metaData.push({ key: '_stripe_payment_intent_id', value: paymentIntent.id });
+        orderInput.value.transactionId = paymentIntent.id;
+        isPaid.value = paymentIntent.status === 'succeeded';
+      }
     }
   } catch (error) {
     console.error(error);
@@ -145,7 +164,7 @@ useSeoMeta({
           <!-- Pay methods -->
           <div v-if="paymentGateways?.nodes.length" class="mt-2 col-span-full">
             <h2 class="mb-4 text-xl font-semibold">{{ $t('messages.billing.paymentOptions') }}</h2>
-            <PaymentOptions v-model="orderInput.paymentMethod" class="mb-4" :paymentGateways />
+            <PaymentOptions v-model="orderInput.paymentMethod" class="mb-4" :paymentGateways="allPaymentGateways" />
             <StripeElement v-if="stripe" v-show="orderInput.paymentMethod.id == 'stripe' || orderInput.paymentMethod.id == 'stripe_cc'" :stripe @updateElement="handleStripeElement" />
           </div>
 
