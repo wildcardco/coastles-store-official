@@ -42,13 +42,69 @@ onMounted(async () => {
   }
 });
 
+function normalizeRestOrder(restOrder: any) {
+  return {
+    databaseId: restOrder.id,
+    date: restOrder.date_created,
+    status: restOrder.status,
+    subtotal: restOrder.line_items.reduce((sum: number, item: any) => sum + parseFloat(item.subtotal), 0).toFixed(2),
+    total: restOrder.total,
+    totalTax: restOrder.total_tax,
+    shippingTotal: restOrder.shipping_total,
+    discountTotal: restOrder.discount_total,
+    paymentMethodTitle: restOrder.payment_method_title,
+    lineItems: {
+      nodes: restOrder.line_items.map((item: any) => ({
+        id: item.id,
+        quantity: item.quantity,
+        total: item.total,
+        product: {
+          node: {
+            name: item.name,
+            slug: '', // REST API does not provide slug directly
+            image: {
+              sourceUrl: item.image?.src || '/images/placeholder.png',
+              altText: item.name,
+              title: item.name,
+            },
+          },
+        },
+        variation: {
+          node: {
+            name: item.variation_id ? item.name : '',
+            image: {
+              sourceUrl: item.image?.src || '/images/placeholder.png',
+              altText: item.name,
+              title: item.name,
+            },
+          },
+        },
+      })),
+    },
+    downloadableItems: { nodes: [] }, // Map downloads if needed
+  };
+}
+
 async function getOrder() {
   try {
-    const data = await GqlGetOrder({ id: params.orderId as string });
-    if (data.order) {
-      order.value = data.order;
+    const orderId = params.orderId as string;
+    const orderKey = query.key as string;
+    if (isGuest.value) {
+      // Fetch order via REST API for guests
+      const { data, error } = await useFetch(`/api/guest-order-receipt?orderId=${orderId}&orderKey=${orderKey}`);
+      if (data.value) {
+        order.value = normalizeRestOrder(data.value);
+      } else {
+        errorMessage.value = error?.value?.data?.statusMessage || 'Not authorized to access this order';
+      }
     } else {
-      errorMessage.value = 'Could not find order';
+      // Fetch order via GraphQL for logged-in users
+      const data = await GqlGetOrder({ id: orderId });
+      if (data.order) {
+        order.value = data.order;
+      } else {
+        errorMessage.value = 'Could not find order';
+      }
     }
   } catch (err: any) {
     errorMessage.value = err?.gqlErrors?.[0].message || 'Could not find order';
@@ -103,7 +159,7 @@ useSeoMeta({
         </template>
         <hr class="my-8" />
       </div>
-      <div v-if="order && !isGuest" class="flex-1 w-full">
+      <div v-if="order" class="flex-1 w-full">
         <div class="flex items-start justify-between">
           <div class="w-[21%]">
             <div class="mb-2 text-xs text-gray-400 uppercase">{{ $t('messages.shop.order') }}</div>
@@ -142,7 +198,9 @@ useSeoMeta({
                 {{ item.variation ? item.variation?.node?.name : item.product?.node.name! }}
               </div>
               <div class="text-sm text-gray-600">Qty. {{ item.quantity }}</div>
-              <span class="text-sm font-semibold">{{ formatPrice(item.total!) }}</span>
+              <span class="text-sm font-semibold">
+                {{ isGuest ? `$${parseFloat(item.total != null ? String(item.total) : '0').toFixed(2)}` : formatPrice(item.total) }}
+              </span>
             </div>
           </div>
         </template>
@@ -157,24 +215,24 @@ useSeoMeta({
         <div>
           <div class="flex justify-between">
             <span>{{ $t('messages.shop.subtotal') }}</span>
-            <span>{{ order.subtotal }}</span>
+            <span>{{ isGuest ? `$${parseFloat(order.subtotal != null ? String(order.subtotal) : '0').toFixed(2)}` : formatPrice(order.subtotal) }}</span>
           </div>
           <div class="flex justify-between">
             <span>{{ $t('messages.general.tax') }}</span>
-            <span>{{ order.totalTax }}</span>
+            <span>{{ isGuest ? `$${parseFloat(order.totalTax != null ? String(order.totalTax) : '0').toFixed(2)}` : formatPrice(order.totalTax) }}</span>
           </div>
           <div class="flex justify-between">
             <span>{{ $t('messages.general.shipping') }}</span>
-            <span>{{ order.shippingTotal }}</span>
+            <span>{{ isGuest ? `$${parseFloat(order.shippingTotal != null ? String(order.shippingTotal) : '0').toFixed(2)}` : formatPrice(order.shippingTotal) }}</span>
           </div>
           <div v-if="hasDiscount" class="flex justify-between text-primary">
             <span>{{ $t('messages.shop.discount') }}</span>
-            <span>- {{ order.discountTotal }}</span>
+            <span>- {{ isGuest ? `$${parseFloat(order.discountTotal != null ? String(order.discountTotal) : '0').toFixed(2)}` : formatPrice(order.discountTotal) }}</span>
           </div>
           <hr class="my-8" />
           <div class="flex justify-between">
             <span class>{{ $t('messages.shop.total') }}</span>
-            <span class="font-semibold">{{ order.total }}</span>
+            <span class="font-semibold">{{ isGuest ? `$${parseFloat(order.total != null ? String(order.total) : '0').toFixed(2)}` : formatPrice(order.total) }}</span>
           </div>
         </div>
       </div>

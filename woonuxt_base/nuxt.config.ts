@@ -113,5 +113,12 @@ export default defineNuxtConfig({
 
   devtools: {
     enabled: true
-  }
+  },
+
+  runtimeConfig: {
+    public: {
+      STRIPE_PUBLISHABLE_KEY: process.env.NUXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+    },
+    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+  },
 });
